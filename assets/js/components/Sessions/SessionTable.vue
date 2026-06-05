@@ -282,6 +282,23 @@ export default defineComponent({
 					format: (value) =>
 						value ? this.fmtW(value * 1e3, POWER_UNIT.KW, false, 1) : undefined,
 				},
+				{
+					name: "reimbursement",
+					unit: this.fmtCurrencySymbol(this.currency),
+					total: this.totalReimbursement,
+					value: (session) => session.reimbursementTotal ?? null,
+					format: (value) => this.fmtMoney(value, this.currency),
+				},
+				{
+					name: "profit",
+					unit: this.fmtCurrencySymbol(this.currency),
+					total: this.totalProfit,
+					value: (session) => session.profit ?? null,
+					format: (value) => {
+						const sign = value >= 0 ? "+" : "";
+						return `${sign}${this.fmtMoney(value, this.currency)}`;
+					},
+				},
 			];
 			// only columns with values are shown
 			return columns.filter((column) => {
@@ -367,6 +384,16 @@ export default defineComponent({
 		},
 		price() {
 			return this.filteredSessions.reduce((total, s) => total + (s.price || 0), 0);
+		},
+		totalReimbursement() {
+			const sessions = this.filteredSessions.filter((s) => s.reimbursementTotal != null);
+			if (!sessions.length) return null;
+			return sessions.reduce((total, s) => total + (s.reimbursementTotal || 0), 0);
+		},
+		totalProfit() {
+			const sessions = this.filteredSessions.filter((s) => s.profit != null);
+			if (!sessions.length) return null;
+			return sessions.reduce((total, s) => total + (s.profit || 0), 0);
 		},
 		avgPower() {
 			const { energy, hours } = this.filteredSessions

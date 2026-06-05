@@ -319,6 +319,7 @@ export interface Loadpoint {
   sessionEnergy: number;
   sessionPrice: number | null;
   sessionPricePerKWh: number | null;
+  sessionProfit: number | null;
   sessionSolarPercentage: number;
   smartCostActive: boolean;
   smartCostLimit: number | null;
@@ -455,7 +456,8 @@ export type SessionInfoKey =
   | "avgPrice"
   | "price"
   | "emission"
-  | "co2";
+  | "co2"
+  | "profit";
 
 export interface SponsorStatus {
   name?: string;
@@ -636,6 +638,7 @@ export interface Vehicle {
   features?: string[];
   capacity?: number;
   icon?: string;
+  reimbursementPricePerKWh?: number;
 }
 
 export type Timeout = ReturnType<typeof setInterval> | null;

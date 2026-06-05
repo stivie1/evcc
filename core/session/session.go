@@ -30,6 +30,10 @@ type Session struct {
 	Co2PerKWh            *float64       `json:"co2PerKWh" csv:"CO2/kWh (gCO2eq)" gorm:"column:co2_per_kwh"`
 	ReferencePricePerKWh *float64       `json:"referencePricePerKWh" csv:"Reference Price/kWh" gorm:"column:reference_price_per_kwh"`
 	ReferenceCo2PerKWh   *float64       `json:"referenceCo2PerKWh" csv:"Reference CO2/kWh (gCO2eq)" gorm:"column:reference_co2_per_kwh"`
+	// Reimbursement tracking for company cars
+	ReimbursementPricePerKWh *float64 `json:"reimbursementPricePerKWh" csv:"Reimbursement/kWh" gorm:"column:reimbursement_price_per_kwh"`
+	ReimbursementTotal       *float64 `json:"reimbursementTotal" csv:"Reimbursement Total" gorm:"column:reimbursement_total"`
+	Profit                   *float64 `json:"profit" csv:"Profit" gorm:"column:profit"`
 }
 
 // Sessions is a list of sessions

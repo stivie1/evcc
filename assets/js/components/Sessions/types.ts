@@ -16,6 +16,10 @@ export interface Session {
   price: number | null;
   pricePerKWh: number | null;
   co2PerKWh?: number | null;
+  // Reimbursement / company car
+  reimbursementPricePerKWh?: number | null;
+  reimbursementTotal?: number | null;
+  profit?: number | null;
 }
 
 export interface Legend {

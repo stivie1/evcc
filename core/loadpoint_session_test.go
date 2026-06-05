@@ -22,6 +22,15 @@ func sessionStart(lp *Loadpoint) func(session *session.Session) {
 	}
 }
 
+type vehicleWithReimbursement struct {
+	api.Vehicle
+	reimbursementPrice float64
+}
+
+func (v vehicleWithReimbursement) ReimbursementPricePerKWh() float64 {
+	return v.reimbursementPrice
+}
+
 func TestSession(t *testing.T) {
 	var err error
 	serverdb.Instance, err = serverdb.New("sqlite", ":memory:")
@@ -56,6 +65,8 @@ func TestSession(t *testing.T) {
 	me.EXPECT().TotalEnergy().Return(1.0, nil)
 	lp.createSession()
 	assert.NotNil(t, lp.session)
+	reimbursementPerKWh := 0.30
+	lp.session.ReimbursementPricePerKWh = &reimbursementPerKWh
 
 	// start charging
 	lp.updateSession(sessionStart(lp))
@@ -63,6 +74,8 @@ func TestSession(t *testing.T) {
 
 	// stop charging
 	clock.Add(time.Hour)
+	pricePerKWh := 0.20
+	lp.energyMetrics.SetEnvironment(0, &pricePerKWh, nil)
 	lp.energyMetrics.Update(1.23)
 	me.EXPECT().TotalEnergy().Return(1.0+lp.getChargedEnergy()/1e3, nil) // match chargedEnergy
 
@@ -70,6 +83,10 @@ func TestSession(t *testing.T) {
 	assert.NotNil(t, lp.session)
 	assert.Equal(t, lp.getChargedEnergy()/1e3, lp.session.ChargedEnergy)
 	assert.Equal(t, clock.Now(), lp.session.Finished)
+	require.NotNil(t, lp.session.ReimbursementTotal)
+	require.NotNil(t, lp.session.Profit)
+	assert.InDelta(t, 1.23*reimbursementPerKWh, *lp.session.ReimbursementTotal, 1e-9)
+	assert.InDelta(t, 1.23*(reimbursementPerKWh-pricePerKWh), *lp.session.Profit, 1e-9)
 
 	s, err := db.Sessions()
 	require.NoError(t, err)
@@ -89,6 +106,48 @@ func TestSession(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, s, 1)
 	t.Logf("session: %+v", s)
+}
+
+func TestSessionCreateCapturesVehicleReimbursement(t *testing.T) {
+	var err error
+	serverdb.Instance, err = serverdb.New("sqlite", ":memory:")
+	require.NoError(t, err)
+
+	db, err := session.NewStore("foo", serverdb.Instance)
+	require.NoError(t, err)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mm := api.NewMockMeter(ctrl)
+	me := api.NewMockMeterEnergy(ctrl)
+	mv := api.NewMockVehicle(ctrl)
+
+	type EnergyDecorator struct {
+		api.Meter
+		api.MeterEnergy
+	}
+	cm := &EnergyDecorator{Meter: mm, MeterEnergy: me}
+	mv.EXPECT().GetTitle().Return("Company Car")
+
+	lp := &Loadpoint{
+		log:         util.NewLogger("foo"),
+		clock:       clock.NewMock(),
+		db:          db,
+		chargeMeter: cm,
+		vehicle: vehicleWithReimbursement{
+			Vehicle:            mv,
+			reimbursementPrice: 0.30,
+		},
+	}
+
+	me.EXPECT().TotalEnergy().Return(1.0, nil)
+	lp.createSession()
+
+	require.NotNil(t, lp.session)
+	require.NotNil(t, lp.session.ReimbursementPricePerKWh)
+	assert.Equal(t, "Company Car", lp.session.Vehicle)
+	assert.Equal(t, 0.30, *lp.session.ReimbursementPricePerKWh)
 }
 
 func TestCloseSessionsOnStartup_emptyDb(t *testing.T) {
