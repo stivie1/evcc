@@ -159,6 +159,7 @@ export default defineComponent({
 		sessionCo2PerKWh: Number as PropType<number | null>,
 		sessionPricePerKWh: Number as PropType<number | null>,
 		sessionPrice: Number as PropType<number | null>,
+		sessionProfit: { type: Number as PropType<number | null>, default: null },
 		sessionSolarPercentage: Number,
 
 		// charger

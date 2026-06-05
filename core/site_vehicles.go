@@ -18,19 +18,20 @@ type planStruct struct {
 }
 
 type vehicleStruct struct {
-	Title          string              `json:"title"`
-	Icon           string              `json:"icon,omitempty"`
-	Capacity       float64             `json:"capacity,omitempty"`
-	Phases         int                 `json:"phases,omitempty"`
-	MinSoc         int                 `json:"minSoc,omitempty"`
-	LimitSoc       int                 `json:"limitSoc,omitempty"`
-	MinCurrent     float64             `json:"minCurrent,omitempty"`
-	MaxCurrent     float64             `json:"maxCurrent,omitempty"`
-	Priority       int                 `json:"priority,omitempty"`
-	Features       []string            `json:"features,omitempty"`
-	Plan           *planStruct         `json:"plan,omitempty"`
-	RepeatingPlans []api.RepeatingPlan `json:"repeatingPlans"`
-	PlanStrategy   api.PlanStrategy    `json:"planStrategy"`
+	Title                    string              `json:"title"`
+	Icon                     string              `json:"icon,omitempty"`
+	Capacity                 float64             `json:"capacity,omitempty"`
+	Phases                   int                 `json:"phases,omitempty"`
+	MinSoc                   int                 `json:"minSoc,omitempty"`
+	LimitSoc                 int                 `json:"limitSoc,omitempty"`
+	MinCurrent               float64             `json:"minCurrent,omitempty"`
+	MaxCurrent               float64             `json:"maxCurrent,omitempty"`
+	Priority                 int                 `json:"priority,omitempty"`
+	Features                 []string            `json:"features,omitempty"`
+	Plan                     *planStruct         `json:"plan,omitempty"`
+	RepeatingPlans           []api.RepeatingPlan `json:"repeatingPlans"`
+	PlanStrategy             api.PlanStrategy    `json:"planStrategy"`
+	ReimbursementPricePerKWh float64             `json:"reimbursementPricePerKWh,omitempty"`
 }
 
 // publishVehicles returns a list of vehicle titles
@@ -53,21 +54,30 @@ func (site *Site) publishVehicles() {
 				Time: time,
 			}
 		}
+		// local interface for reimbursement — avoid importing vehicle package
+		type vehicleReimbursement interface {
+			ReimbursementPricePerKWh() float64
+		}
+		var reimbursementPrice float64
+		if rv, ok := instance.(vehicleReimbursement); ok {
+			reimbursementPrice = rv.ReimbursementPricePerKWh()
+		}
 
 		res[v.Name()] = vehicleStruct{
-			Title:          instance.GetTitle(),
-			Icon:           instance.Icon(),
-			Capacity:       instance.Capacity(),
-			Phases:         instance.Phases(),
-			MinSoc:         v.GetMinSoc(),
-			LimitSoc:       v.GetLimitSoc(),
-			MinCurrent:     ac.MinCurrent,
-			MaxCurrent:     ac.MaxCurrent,
-			Priority:       ac.Priority,
-			Features:       lo.Map(instance.Features(), func(f api.Feature, _ int) string { return f.String() }),
-			Plan:           plan,
-			RepeatingPlans: v.GetRepeatingPlans(),
-			PlanStrategy:   v.GetPlanStrategy(),
+			Title:                    instance.GetTitle(),
+			Icon:                     instance.Icon(),
+			Capacity:                 instance.Capacity(),
+			Phases:                   instance.Phases(),
+			MinSoc:                   v.GetMinSoc(),
+			LimitSoc:                 v.GetLimitSoc(),
+			MinCurrent:               ac.MinCurrent,
+			MaxCurrent:               ac.MaxCurrent,
+			Priority:                 ac.Priority,
+			Features:                 lo.Map(instance.Features(), func(f api.Feature, _ int) string { return f.String() }),
+			Plan:                     plan,
+			RepeatingPlans:           v.GetRepeatingPlans(),
+			PlanStrategy:             v.GetPlanStrategy(),
+			ReimbursementPricePerKWh: reimbursementPrice,
 		}
 
 		// publish effective plan strategy immediately for soc-based planning

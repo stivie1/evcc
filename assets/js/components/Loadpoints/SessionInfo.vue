@@ -46,6 +46,7 @@ export default defineComponent({
 		sessionCo2PerKWh: { type: Number, default: 0 },
 		sessionPricePerKWh: { type: Number, default: 0 },
 		sessionPrice: { type: Number, default: 0 },
+		sessionProfit: { type: Number as PropType<number | null>, default: null },
 		currency: String as PropType<CURRENCY>,
 		sessionSolarPercentage: { type: Number, default: 0 },
 		chargeRemainingDurationInterpolated: { type: Number, default: 0 },
@@ -107,6 +108,11 @@ export default defineComponent({
 					value: this.emissionFormatted,
 					available: this.tariffCo2 !== undefined,
 				},
+				{
+					key: "profit" as const,
+					value: this.profitFormatted,
+					available: this.sessionProfit != null,
+				},
 			];
 			// only show options that are available
 			return result.filter(({ available }) => available === undefined || available);
@@ -156,6 +162,11 @@ export default defineComponent({
 			return `${this.fmtMoney(this.sessionPrice, this.currency)} ${this.fmtCurrencySymbol(
 				this.currency
 			)}`;
+		},
+		profitFormatted() {
+			if (this.sessionProfit == null) return "–";
+			const sign = this.sessionProfit >= 0 ? "+" : "";
+			return `${sign}${this.fmtMoney(this.sessionProfit, this.currency)} ${this.fmtCurrencySymbol(this.currency)}`;
 		},
 	},
 	methods: {

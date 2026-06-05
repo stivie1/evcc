@@ -27,6 +27,12 @@ export const convertToUiLoadpoints = (
     const vehicleHasSoc = vehicleKnown && !vehicle?.features?.includes("Offline");
     const socBasedCharging = vehicleHasSoc || lp.vehicleSoc > 0;
     const socBasedPlanning = !!(socBasedCharging && capacity > 0);
+    // sessionEnergy is in Wh; reimbursementPricePerKWh is per kWh
+    const reimbursementPerKWh = vehicle?.reimbursementPricePerKWh ?? 0;
+    const sessionProfit: number | null =
+      reimbursementPerKWh > 0 && lp.sessionPrice != null
+        ? reimbursementPerKWh * (lp.sessionEnergy / 1000) - lp.sessionPrice
+        : null;
 
     return {
       ...lp,
@@ -44,6 +50,7 @@ export const convertToUiLoadpoints = (
       order: getLoadpointOrder(id),
       visible: isLoadpointVisible(id),
       sessionInfo: getLoadpointSessionInfo(id),
+      sessionProfit,
       lastSmartCostLimit: getLoadpointLastSmartCostLimit(id),
       lastSmartFeedInPriorityLimit: getLoadpointLastSmartFeedInPriorityLimit(id),
       rangePerSoc:

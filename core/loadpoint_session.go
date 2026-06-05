@@ -43,6 +43,15 @@ func (lp *Loadpoint) createSession() {
 
 	if v := lp.GetVehicle(); v != nil {
 		lp.session.Vehicle = v.GetTitle()
+		// Capture reimbursement rate snapshot for company car profit tracking
+		type vehicleReimbursement interface {
+			ReimbursementPricePerKWh() float64
+		}
+		if rv, ok := v.(vehicleReimbursement); ok {
+			if price := rv.ReimbursementPricePerKWh(); price > 0 {
+				lp.session.ReimbursementPricePerKWh = &price
+			}
+		}
 	} else if lp.chargerHasFeature(api.IntegratedDevice) {
 		lp.session.Vehicle = lp.GetTitle()
 	}
@@ -79,6 +88,15 @@ func (lp *Loadpoint) applyEnergyMetrics(s *session.Session) {
 	s.PricePerKWh = lp.energyMetrics.PricePerKWh()
 	s.Co2PerKWh = lp.energyMetrics.Co2PerKWh()
 	s.ChargedEnergy = lp.energyMetrics.TotalWh() / 1e3
+	// Compute reimbursement profit/loss for company car sessions
+	if s.ReimbursementPricePerKWh != nil && s.ChargedEnergy > 0 {
+		reimbursement := *s.ReimbursementPricePerKWh * s.ChargedEnergy
+		s.ReimbursementTotal = &reimbursement
+		if s.Price != nil {
+			profit := reimbursement - *s.Price
+			s.Profit = &profit
+		}
+	}
 
 	lp.db.Persist(s)
 }
