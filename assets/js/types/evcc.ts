@@ -639,6 +639,7 @@ export interface Vehicle {
   capacity?: number;
   icon?: string;
   reimbursementPricePerKWh?: number;
+  reimbursementMonthly?: number;
 }
 
 export type Timeout = ReturnType<typeof setInterval> | null;

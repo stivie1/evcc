@@ -18,6 +18,7 @@ export interface Session {
   co2PerKWh?: number | null;
   // Reimbursement / company car
   reimbursementPricePerKWh?: number | null;
+  reimbursementMonthly?: number | null;
   reimbursementTotal?: number | null;
   profit?: number | null;
 }

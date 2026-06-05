@@ -15,6 +15,8 @@ type embed struct {
 	OnIdentify   api.ActionConfig `mapstructure:"onIdentify"`
 	// ReimbursementPricePerKWh_ is the fixed compensation rate per kWh (e.g. paid by employer for company car)
 	ReimbursementPricePerKWh_ float64 `mapstructure:"reimbursementPricePerKWh"`
+	// ReimbursementMonthly_ is the fixed monthly compensation amount (e.g. €50/month from employer)
+	ReimbursementMonthly_ float64 `mapstructure:"reimbursementMonthly"`
 }
 
 // Title implements the api.Vehicle interface
@@ -76,4 +78,9 @@ func (v *embed) Features() []api.Feature {
 // ReimbursementPricePerKWh returns the fixed compensation rate per kWh from employer
 func (v *embed) ReimbursementPricePerKWh() float64 {
 	return v.ReimbursementPricePerKWh_
+}
+
+// ReimbursementMonthly returns the fixed monthly compensation amount from employer
+func (v *embed) ReimbursementMonthly() float64 {
+	return v.ReimbursementMonthly_
 }

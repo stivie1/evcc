@@ -52,6 +52,15 @@ func (lp *Loadpoint) createSession() {
 				lp.session.ReimbursementPricePerKWh = &price
 			}
 		}
+		// Also capture monthly reimbursement snapshot
+		type vehicleReimbursementMonthly interface {
+			ReimbursementMonthly() float64
+		}
+		if rm, ok := v.(vehicleReimbursementMonthly); ok {
+			if monthly := rm.ReimbursementMonthly(); monthly > 0 {
+				lp.session.ReimbursementMonthly = &monthly
+			}
+		}
 	} else if lp.chargerHasFeature(api.IntegratedDevice) {
 		lp.session.Vehicle = lp.GetTitle()
 	}

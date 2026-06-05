@@ -866,6 +866,8 @@
       "generic": "Other integrations",
       "online": "Vehicles with online API",
       "primary": "Generic integrations",
+      "reimbursementMonthly": "Monthly reimbursement",
+      "reimbursementMonthlyHelp": "Fixed monthly amount compensated by your employer regardless of kWh charged. Used to calculate profit/loss in the sessions view when filtered by month. Configure via YAML: reimbursementMonthly: 50.00",
       "reimbursementPricePerKWh": "Reimbursement rate",
       "reimbursementPricePerKWhHelp": "Fixed price per kWh compensated by your employer. Used to calculate profit/loss per charging session. Configure via YAML: reimbursementPricePerKWh: 0.30",
       "scooter": "Scooter",

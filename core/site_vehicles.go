@@ -32,6 +32,7 @@ type vehicleStruct struct {
 	RepeatingPlans           []api.RepeatingPlan `json:"repeatingPlans"`
 	PlanStrategy             api.PlanStrategy    `json:"planStrategy"`
 	ReimbursementPricePerKWh float64             `json:"reimbursementPricePerKWh,omitempty"`
+	ReimbursementMonthly     float64             `json:"reimbursementMonthly,omitempty"`
 }
 
 // publishVehicles returns a list of vehicle titles
@@ -62,6 +63,13 @@ func (site *Site) publishVehicles() {
 		if rv, ok := instance.(vehicleReimbursement); ok {
 			reimbursementPrice = rv.ReimbursementPricePerKWh()
 		}
+		type vehicleReimbursementMonthly interface {
+			ReimbursementMonthly() float64
+		}
+		var reimbursementMonthly float64
+		if rm, ok := instance.(vehicleReimbursementMonthly); ok {
+			reimbursementMonthly = rm.ReimbursementMonthly()
+		}
 
 		res[v.Name()] = vehicleStruct{
 			Title:                    instance.GetTitle(),
@@ -78,6 +86,7 @@ func (site *Site) publishVehicles() {
 			RepeatingPlans:           v.GetRepeatingPlans(),
 			PlanStrategy:             v.GetPlanStrategy(),
 			ReimbursementPricePerKWh: reimbursementPrice,
+			ReimbursementMonthly:     reimbursementMonthly,
 		}
 
 		// publish effective plan strategy immediately for soc-based planning

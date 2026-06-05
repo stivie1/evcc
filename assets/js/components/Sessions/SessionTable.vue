@@ -285,14 +285,15 @@ export default defineComponent({
 				{
 					name: "reimbursement",
 					unit: this.fmtCurrencySymbol(this.currency),
-					total: this.totalReimbursement,
-					value: (session) => session.reimbursementTotal ?? null,
+					total: this.totalReimbursement ?? this.monthlyReimbursementTotal,
+					value: (session) =>
+						session.reimbursementTotal ?? session.reimbursementMonthly ?? null,
 					format: (value) => this.fmtMoney(value, this.currency),
 				},
 				{
 					name: "profit",
 					unit: this.fmtCurrencySymbol(this.currency),
-					total: this.totalProfit,
+					total: this.totalProfit ?? this.monthlyReimbursementProfit,
 					value: (session) => session.profit ?? null,
 					format: (value) => {
 						const sign = value >= 0 ? "+" : "";
@@ -303,6 +304,8 @@ export default defineComponent({
 			// only columns with values are shown
 			return columns.filter((column) => {
 				if (column.name === "energy") return true;
+				if (column.name === "profit" && this.monthlyReimbursementProfit != null)
+					return true;
 				return this.sessions.some((s) => column.value(s));
 			});
 		},
@@ -394,6 +397,25 @@ export default defineComponent({
 			const sessions = this.filteredSessions.filter((s) => s.profit != null);
 			if (!sessions.length) return null;
 			return sessions.reduce((total, s) => total + (s.profit || 0), 0);
+		},
+		monthlyReimbursementTotal() {
+			const sessions = this.filteredSessions.filter(
+				(s) => s.reimbursementMonthly != null && s.reimbursementMonthly > 0
+			);
+			if (!sessions.length) return null;
+			const rate = sessions[0].reimbursementMonthly as number;
+			if (!sessions.every((s) => s.reimbursementMonthly === rate)) return null;
+			return rate;
+		},
+		monthlyReimbursementProfit() {
+			const sessions = this.filteredSessions.filter(
+				(s) => s.reimbursementMonthly != null && s.reimbursementMonthly > 0
+			);
+			if (!sessions.length) return null;
+			const rate = sessions[0].reimbursementMonthly as number;
+			if (!sessions.every((s) => s.reimbursementMonthly === rate)) return null;
+			const totalCost = sessions.reduce((sum, s) => sum + (s.price || 0), 0);
+			return rate - totalCost;
 		},
 		avgPower() {
 			const { energy, hours } = this.filteredSessions

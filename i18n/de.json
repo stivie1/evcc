@@ -866,6 +866,8 @@
       "generic": "Weitere Integrationen",
       "online": "Fahrzeuge mit Schnittstelle",
       "primary": "Generische Integrationen",
+      "reimbursementMonthly": "Monatliche Pauschale",
+      "reimbursementMonthlyHelp": "Fester monatlicher Betrag, den dein Arbeitgeber unabhängig von der geladenen Energiemenge erstattet. Zur Berechnung von Gewinn/Verlust in der Sitzungsübersicht bei Monatsfilterung. Konfigurierbar über YAML: reimbursementMonthly: 50.00",
       "reimbursementPricePerKWh": "Erstattungspreis",
       "reimbursementPricePerKWhHelp": "Fester Preis pro kWh, den dein Arbeitgeber erstattet. Zur Berechnung von Gewinn/Verlust pro Ladevorgang. Konfigurierbar über YAML: reimbursementPricePerKWh: 0.30",
       "scooter": "Elektroroller",
