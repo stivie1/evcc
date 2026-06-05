@@ -12,6 +12,14 @@ import (
 	"github.com/jinzhu/now"
 )
 
+type vehicleReimbursement interface {
+	ReimbursementPricePerKWh() float64
+}
+
+type vehicleReimbursementMonthly interface {
+	ReimbursementMonthly() float64
+}
+
 func (lp *Loadpoint) chargeMeterTotal() float64 {
 	m, ok := api.Cap[api.MeterEnergy](lp.chargeMeter)
 	if !ok {
@@ -44,18 +52,12 @@ func (lp *Loadpoint) createSession() {
 	if v := lp.GetVehicle(); v != nil {
 		lp.session.Vehicle = v.GetTitle()
 		// Capture reimbursement rate snapshot for company car profit tracking
-		type vehicleReimbursement interface {
-			ReimbursementPricePerKWh() float64
-		}
 		if rv, ok := v.(vehicleReimbursement); ok {
 			if price := rv.ReimbursementPricePerKWh(); price > 0 {
 				lp.session.ReimbursementPricePerKWh = &price
 			}
 		}
 		// Also capture monthly reimbursement snapshot
-		type vehicleReimbursementMonthly interface {
-			ReimbursementMonthly() float64
-		}
 		if rm, ok := v.(vehicleReimbursementMonthly); ok {
 			if monthly := rm.ReimbursementMonthly(); monthly > 0 {
 				lp.session.ReimbursementMonthly = &monthly

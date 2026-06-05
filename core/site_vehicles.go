@@ -17,6 +17,15 @@ type planStruct struct {
 	Time time.Time `json:"time"`
 }
 
+// local interfaces for reimbursement — avoid importing vehicle package
+type vehiclePublishReimbursement interface {
+	ReimbursementPricePerKWh() float64
+}
+
+type vehiclePublishReimbursementMonthly interface {
+	ReimbursementMonthly() float64
+}
+
 type vehicleStruct struct {
 	Title                    string              `json:"title"`
 	Icon                     string              `json:"icon,omitempty"`
@@ -55,19 +64,12 @@ func (site *Site) publishVehicles() {
 				Time: time,
 			}
 		}
-		// local interface for reimbursement — avoid importing vehicle package
-		type vehicleReimbursement interface {
-			ReimbursementPricePerKWh() float64
-		}
 		var reimbursementPrice float64
-		if rv, ok := instance.(vehicleReimbursement); ok {
+		if rv, ok := instance.(vehiclePublishReimbursement); ok {
 			reimbursementPrice = rv.ReimbursementPricePerKWh()
 		}
-		type vehicleReimbursementMonthly interface {
-			ReimbursementMonthly() float64
-		}
 		var reimbursementMonthly float64
-		if rm, ok := instance.(vehicleReimbursementMonthly); ok {
+		if rm, ok := instance.(vehiclePublishReimbursementMonthly); ok {
 			reimbursementMonthly = rm.ReimbursementMonthly()
 		}
 
